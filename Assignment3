@@ -1,0 +1,93 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CS184A/284A  PS3
+% this is the main program for ps3
+% please do not change this file!
+% your assignment is to write the following function called by this main program:
+%   [output,cost3] =
+%   mlp(trainX,trainY,testX,testY,alpha,minibatchsize,nepochs)
+% This function implements a simple neural network model for binary
+% classification
+%
+% when submitting your assignment, use zip to combine all your
+% files into a single file named: UCIID_ps3.zip 
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+M = importdata('SAheart.data',',',1);
+data = M.data;   % 5875 x 22 matrix
+X = data(:,2:end-1);  % 9 features
+Y = data(:,end);  % heart disease diagnosis (binary)
+m = size(X,1);  % the number of samples
+
+% normalize X
+X = standardize(X);
+
+
+
+% randomly partition the data into a training set and a test set
+rng(1); % set seed of the ranom number generator
+P = randperm(m);   % randomly permute 1:m
+train_num = round(m*0.7); % use 70% of the data for training
+train_index = P(1:train_num);  % randomly choose the train samples
+test_index = P(train_num+1:end); % the remaining for cross-validation
+
+
+trainX = X(train_index,:);
+trainY = Y(train_index);
+testX = X(test_index,:);
+testY = Y(test_index,:);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Method 1: logistic regression
+
+alpha = 0.01; % learning rate
+epsilon = 0.001; % convergence criterion, i.e., stop when norm(grad)<epsilon
+[theta1,tmp1]=LogisticRegressionGradientDescent([ones(size(trainX,1),1),trainX],trainY,alpha,epsilon);
+% logistic cost on test data
+cost1 = logistic_cost(testY, sigmoid([ones(size(testX,1),1),testX]*theta1));
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Method 2: logistic regression with augmented features plus ridge regularization
+% with the following regularization term: lambda/2 * theta'*theta
+
+new_features = X.^2;
+newX = [ones(size(X,1),1),X,standardize(new_features)];
+
+lambda = 0.2632;  % best lambda learned from ps2
+alpha = 0.01; % learning rate
+epsilon = 0.001; % convergence criterion, i.e., stop when norm(grad)<epsilon
+[theta2,tmp2]=RidgeLogisticRegressionGradientDescent(newX(train_index,:),Y(train_index),alpha,epsilon,lambda);
+
+% logistic cost on test data
+cost2 = logistic_cost(testY, sigmoid(newX(test_index,:)*theta2));
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Method 3 (problem 1): Implement a neural network
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% implement a three-layer neural network for binary classification
+% let the number of units in the hidden layer be 5
+%
+% return from the program:
+%    output - the activity of output unit for all input test data
+%    cost3  - the value of the logistic cost function on test data
+%
+
+alpha = 0.1;
+minibatchsize=10;
+nepochs = 100;
+[output,cost3] = mlp(trainX,trainY,testX,testY,alpha,minibatchsize,nepochs);
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% problem 2: discussions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1) compare the results obtained from the three methods: cost1, cost2, and cost3 
+% 2) discuss your observations.
