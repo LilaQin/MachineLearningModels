@@ -1,0 +1,6 @@
+CS284A/184A Problem Set 1
+In this problem set, we will study and implement linear regression in Matlab. The problem that we will try to solve is to predict Parkinson’s disease symptom score from voice measurements.
+The data used in this assignment can be accessed from the course website under “Parkinson’s Disease Telemonitoring Dataset” within the Data section. The dataset con- sists of 5876 rows and 22 columns, delimited by comma. The first row describes the content of each column. More information on the data can be found in the “info” file.
+The goal of this assignment is to build a linear regression model to predict the Parkin- son’s disease symptom score (in terms of “motor UP”) based on 16 voice measurements (the last 16 columns starting from “Jitter”).
+Please write your matlab code from scratch, that is, you should not call linear regres- sion or gradient descent implementations already existed in Matlab. However, you are welcome to compare your results to the existing implementations for debugging and learning purpose.
+The template files for this assignment can be downloaded from the course website.
