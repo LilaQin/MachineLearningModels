@@ -1,0 +1,109 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CS184A/284A  PS2
+% this is the main program for ps2
+% please do not change this file!
+% your assignment is to write three functions called by this main program:
+% 1: RidgeLogisticRegressionGradientDescent
+% 2: RidgeLogisticRegressionGradientDescent
+% 3: RidgeLogisticRegressionCV
+% 4: a discussion of your observed results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+M = importdata('SAheart.data',',',1);
+data = M.data;   % 5875 x 22 matrix
+X = data(:,2:end-1);  % 9 features
+Y = data(:,end);  % heart disease diagnosis (binary)
+m = size(X,1);  % the number of samples
+
+% normalize X
+X = standardize(X);
+
+% use mean(X,1) and std(X,[],1)to confirm that the data is properly
+% normalized
+mean(X,1)
+std(X,[],1)
+
+
+% augment X to include the bias term
+X = [ones(size(X,1),1),X];
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% problem 1: logistic regression
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% write a logistic regression function based on gradient descent
+% return theta and cost
+%
+%
+alpha = 0.01; % learning rate
+epsilon = 0.001; % convergence criterion, i.e., stop when norm(grad)<epsilon
+[theta1,cost1]=LogisticRegressionGradientDescent(X,Y,alpha,epsilon);
+
+
+
+% expand features to include quadratic terms
+new_features = X(:,2:end).^2;
+newX = [X,standardize(new_features)];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% problem 2: regularization
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% write a logistic regression function with ridge regularization
+% add the following regularization term:
+%      lambda/2 * theta'*theta
+% to the logistic regression cost function
+% lambda is a given regulation parameter 
+% return theta and the cost with the regulation term added
+
+lambda = 0.5;
+[theta2,cost2]=RidgeLogisticRegressionGradientDescent(newX,Y,alpha,epsilon,lambda);
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% problem 3: Cross-validation procedure to choose regularizaiton parameter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% implement a cross-validation procedure to choose the best
+% regularization parameter from a set of given values. 
+%
+% return the best lambda and the corresponding cost function on
+% cross-validation dataset
+%
+
+% randomly divide the data into a training set and a
+% cross-validation set
+rng(1); % set seed of the ranom number generator
+P = randperm(m);   % randomly permute 1:m
+train_num = round(m*0.7); % use 70% of the data for training
+train_index = P(1:train_num);  % randomly choose the train samples
+test_index = P(train_num+1:end); % the remaining for cross-validation
+trainX = newX(train_index,:);
+trainY = Y(train_index);
+testX = newX(test_index,:);
+testY = Y(test_index,:);
+
+lambda_set = linspace(0,5,20);  % regularization parameters to try,
+                                % liearly spaced between 0 and 5,
+[best_lambda,test_cost]=RidgeLogisticRegressionCV(trainX,trainY,testX,testY,alpha,epsilon,lambda_set);
+
+
+% return the best theta corresponding to the chosen lambda  
+[theta3,cost3]=RidgeLogisticRegressionGradientDescent(newX,Y,alpha,epsilon,best_lambda);
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% problem 4: discussions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 1) plot how the test cost function changes as a function of the
+% regularization parameter
+% 2) on the same plot, also show how the trainning cost function
+% changes as a function of the regularization parameter
+% 3) explain your observations.
+% 4) compare the three cost values returned from the program: cost1, cost2, and cost3
+%    explain the differences. 
